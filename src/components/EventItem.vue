@@ -54,7 +54,17 @@ const getEventTime = (startDate) => {
 const chipDetails = (categoryId) => {
   return eventStore.categories.find(({ id }) => id === categoryId);
 }
+const hasEmptyField = () => {
+  return !eventTitle.value.trim()
+    || !eventCategory.value
+    || !eventStartTime.value
+    || !eventEndDateTime.value;
+}
 const onSaveEvent = async () => {
+  if (hasEmptyField()) {
+    return;
+  }
+
   try {
     await eventStore.createEvent({
       name: eventTitle.value,
@@ -62,13 +72,11 @@ const onSaveEvent = async () => {
       startDate: eventStartDate.value,
       endDate: eventEndDateTime.value,
     });
+    // @todo onsuccess clear and close modal
+    await eventStore.loadEvents();
   } catch (err) {
     console.log('Save event error: ', err)
-  } finally {
-    isShowAddDialog.value = false;
-    await eventStore.loadEvents();
   }
-
 }
 </script>
 

@@ -39,7 +39,7 @@ const onNextMonth = () => {
       @update:model-value="onSelectCategories"
     />
     <template #append>
-      <div class="d-flex flex-column">
+      <div class="d-flex flex-column mr-2">
         <div>
           <v-tooltip
             v-model="showPrevBtnTooltip"

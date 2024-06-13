@@ -10,6 +10,8 @@ calendarStore.$subscribe(() => {
   getLastCalendarCells();
 });
 
+const weekLength = 7;
+
 const weekDays = {
   0: 'Sunday',
   1: 'Monday',
@@ -42,7 +44,11 @@ const getFirstDayOfMonth = () => {
 
 const getLastCalendarCells = () => {
   const totalCellsNumber = firstDayOfCurrentMonth.value <= 5 ? 35 : 42;
-  lastCalendarCells.value = totalCellsNumber - daysInCurrentMonth.value - firstDayOfCurrentMonth.value;
+  const cellsNumber = totalCellsNumber - daysInCurrentMonth.value - firstDayOfCurrentMonth.value;
+
+  lastCalendarCells.value = cellsNumber < 0
+    ? weekLength + cellsNumber
+    : cellsNumber;
 }
 
 const totalMonthGrid = computed(() => {
@@ -53,9 +59,11 @@ const totalMonthGrid = computed(() => {
   return emptyDaysBeforeFirstDay.concat(daysOfMonth).concat(emptyDaysAfterLastDay);
 })
 
+// Break total month grid array on two dimensions array that looks like:
+// month - [ week - [days], week - [days], week - [days].....]
 const chunkedDays = computed(() => {
   return totalMonthGrid.value.reduce((acc, cV, idx) => {
-    const chunkIdx = Math.floor(idx / 7);
+    const chunkIdx = Math.floor(idx / weekLength);
 
     if (!acc[chunkIdx]) {
       acc[chunkIdx] = [];
@@ -67,7 +75,14 @@ const chunkedDays = computed(() => {
   }, [])
 })
 
-const generateArray = (len, fill) => {
+/**
+ * Generate an array of specified length and contents. For an empty cells, it should contain -1 as a value.
+ * For non-empty cells (days of the month), it should contain the day number of the month
+ * @param {number} len
+ * @param {number | null} fill
+ * @returns array of the given length
+ * */
+const generateArray = (len, fill = null) => {
   return Array.from(
     { length: len },
     (_, idx) => fill === -1 ? fill : idx + 1
@@ -80,6 +95,11 @@ const isEventToday = (day, eventStartDate) => {
   && day === parseInt(eventStartDate.substring(8, 10), 10);
 }
 
+/**
+ * Handle all the events to get an array of events for the specified day
+ * @param {number} day
+ * @returns an array of events
+ * */
 const oneDayEvents = (day) => {
   if (day === -1 || !eventStore.eventsByCategory.length) {
     return [day];
